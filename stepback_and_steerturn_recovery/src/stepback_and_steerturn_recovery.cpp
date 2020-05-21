@@ -246,11 +246,16 @@ gm::Twist StepBackAndSteerTurnRecovery::scaleGivenAccelerationLimits (const gm::
 gm::Pose2D StepBackAndSteerTurnRecovery::getCurrentLocalPose () const
 {
   tf::Stamped<tf::Pose> p;
+  bool pose_ready = local_costmap_->getRobotPose(p);
   local_costmap_->getRobotPose(p);
   gm::Pose2D pose;
-  pose.x = p.getOrigin().x();
-  pose.y = p.getOrigin().y();
-  pose.theta = tf::getYaw(p.getRotation());
+  if(pose_ready){
+    pose.x = p.getOrigin().x();
+    pose.y = p.getOrigin().y();
+    pose.theta = tf::getYaw(p.getRotation());
+  }else{
+    ROS_DEBUG_NAMED ("StepBackAndSteerTurnRecovery::getCurrentLocalPose", "ERROR : local_costmap_->getRobotPose()");
+  }
   return pose;
 }
 
