@@ -192,14 +192,20 @@ gm::Pose2D StepBackAndSteerTurnRecovery::getPoseToObstacle (const gm::Pose2D& cu
   double t; // Will hold the first time that is invalid
   gm::Pose2D current_tmp = current;
   double next_cost;
-
+  // Check Timeout
+  ros::Time time_begin = ros::Time::now();
+  const double time_out = step_back_timeout_;
   ROS_DEBUG_NAMED ("top", " ");
   for (t=simulation_inc_; t<=duration_ + 500; t+=simulation_inc_) {
-      ROS_DEBUG_NAMED ("top", "start loop");
-      current_tmp = forwardSimulate(current, twist, t);
-      ROS_DEBUG_NAMED ("top", "finish fowardSimulate");
-      next_cost = normalizedPoseCost(current_tmp);
-      ROS_DEBUG_NAMED ("top", "finish Cost");
+    if(time_begin + ros::Duration(time_out) < ros::Time::now())
+    {
+        break;
+    }
+    ROS_DEBUG_NAMED ("top", "start loop");
+    current_tmp = forwardSimulate(current, twist, t);
+    ROS_DEBUG_NAMED ("top", "finish fowardSimulate");
+    next_cost = normalizedPoseCost(current_tmp);
+    ROS_DEBUG_NAMED ("top", "finish Cost");
     //if (next_cost > cost) {
     if (/*next_cost == costmap_2d::INSCRIBED_INFLATED_OBSTACLE ||*/ next_cost == costmap_2d::LETHAL_OBSTACLE) {
       ROS_DEBUG_STREAM_NAMED ("cost", "Cost at " << t << " and pose " << forwardSimulate(current, twist, t)
